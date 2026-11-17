@@ -7,18 +7,24 @@ comprehensive history/credential audit, and false positives are possible.
 """
 from __future__ import annotations
 
-from collections import Counter
-from pathlib import Path
 import re
 import subprocess
 import sys
+from collections import Counter
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_BLOB_BYTES = 2 * 1024 * 1024
 RULES = {
-    "github-access-token": re.compile(rb"(?:gh[pousr]_[a-zA-Z0-9]{30,}|github_pat_[a-zA-Z0-9_]{60,})"),
-    "aws-access-key-id": re.compile(rb"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"),
-    "private-key-block": re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
+    "github-access-token": re.compile(
+        rb"(?:gh[pousr]_[a-zA-Z0-9]{30,}|github_pat_[a-zA-Z0-9_]{60,})"
+    ),
+    "aws-access-key-id": re.compile(
+        rb"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"
+    ),
+    "private-key-block": re.compile(
+        rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"
+    ),
     "slack-access-token": re.compile(rb"\bxox[baprs]-[a-zA-Z0-9-]{20,}\b"),
     "google-api-key": re.compile(rb"\bAIza[a-zA-Z0-9_-]{35}\b"),
     "stripe-secret-key": re.compile(rb"\bsk_live_[a-zA-Z0-9]{16,}\b"),
@@ -28,15 +34,20 @@ RULES = {
 def git_bytes(*args: str) -> bytes:
     # No shell, no network, no untrusted code execution, no captured data in logs.
     return subprocess.run(
-        ["git", *args], cwd=ROOT, stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL, check=True, timeout=120,
+        ["git", *args],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=True,
+        timeout=120,
     ).stdout
 
 
 def main() -> int:
     try:
         objects = git_bytes(
-            "cat-file", "--batch-all-objects",
+            "cat-file",
+            "--batch-all-objects",
             "--batch-check=%(objectname) %(objecttype) %(objectsize)",
         )
     except (OSError, subprocess.SubprocessError):
