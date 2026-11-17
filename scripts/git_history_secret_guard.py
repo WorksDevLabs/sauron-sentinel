@@ -5,6 +5,7 @@ Prints finding *categories* only, never secret values, paths, or blob hashes.
 Limited to known token/key signatures and blobs <= 2 MiB. This is not a
 comprehensive history/credential audit, and false positives are possible.
 """
+
 from __future__ import annotations
 
 import re
