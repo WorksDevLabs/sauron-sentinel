@@ -37,6 +37,9 @@ jobs:
         run: python -m ruff check .
       - name: Check formatting
         run: python -m ruff format --check .
+      - name: Show format diff for new security scanner
+        if: failure()
+        run: python -m ruff format --diff scripts/git_history_secret_guard.py
       - name: Test with branch coverage
         run: python -m pytest --cov --cov-report=term-missing
       - name: Validate read-only Windows audit script syntax
