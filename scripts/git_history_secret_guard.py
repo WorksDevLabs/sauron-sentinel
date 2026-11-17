@@ -19,12 +19,8 @@ RULES = {
     "github-access-token": re.compile(
         rb"(?:gh[pousr]_[a-zA-Z0-9]{30,}|github_pat_[a-zA-Z0-9_]{60,})"
     ),
-    "aws-access-key-id": re.compile(
-        rb"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"
-    ),
-    "private-key-block": re.compile(
-        rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"
-    ),
+    "aws-access-key-id": re.compile(rb"(?<![A-Z0-9])(?:AKIA|ASIA)[A-Z0-9]{16}(?![A-Z0-9])"),
+    "private-key-block": re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----"),
     "slack-access-token": re.compile(rb"\bxox[baprs]-[a-zA-Z0-9-]{20,}\b"),
     "google-api-key": re.compile(rb"\bAIza[a-zA-Z0-9_-]{35}\b"),
     "stripe-secret-key": re.compile(rb"\bsk_live_[a-zA-Z0-9]{16,}\b"),
@@ -91,7 +87,9 @@ def main() -> int:
     if seen:
         for label, count in sorted(seen.items()):
             print(f"REVIEW: {label} pattern found in {count} distinct Git blob(s).")
-        print("Possible historical secret exposure: investigate privately and rotate live credentials.")
+        print(
+            "Possible historical secret exposure: investigate privately and rotate live credentials."
+        )
         return 1
     print("PASS: no matching known signatures in inspected Git blobs.")
     print("Important: this does not exclude other secrets or prove full history coverage.")
