@@ -56,6 +56,39 @@ foreach ($name in @('WinRM', 'RemoteRegistry')) {
         } else { Add-Check $serviceName 'OK' 'Service not running at the time of inspection.' }
     }
 }
+Run-Check 'Remote support software' {
+    # Names are examples; this does not detect renamed, covert or custom remote tools.
+    $pattern = '(?i)anydesk|teamviewer|rustdesk|screenconnect|connectwise|splashtop|logmein|dwagent|chromeremotedesktop|ultravnc|tightvnc|realvnc|meshagent|ateraagent'
+    $services = @(Get-Service | Where-Object {
+        $_.Status -eq 'Running' -and ($_.Name -match $pattern -or $_.DisplayName -match $pattern)
+    } | Select-Object -ExpandProperty Name -Unique)
+    $processes = @(Get-Process | Where-Object { $_.ProcessName -match $pattern } |
+        Select-Object -ExpandProperty ProcessName -Unique)
+    $names = @($services + $processes | Sort-Object -Unique)
+    if ($names.Count -gt 0) {
+        Add-Check 'Remote support software' 'REVIEW' ('Active indicators: ' + ($names -join ', ') + '. Check whether you installed/authorized these.')
+    } else {
+        Add-Check 'Remote support software' 'OK' 'No named remote-support services/processes found; this cannot rule out hidden or renamed tools.'
+    }
+}
+Run-Check 'OpenSSH server' {
+    $svc = Get-Service -Name 'sshd' -ErrorAction SilentlyContinue
+    if ($null -eq $svc) {
+        Add-Check 'OpenSSH server' 'OK' 'Service not installed under standard name.'
+    } elseif ($svc.Status -eq 'Running') {
+        Add-Check 'OpenSSH server' 'REVIEW' 'SSH daemon running; review users, host firewall and key access.'
+    } else {
+        Add-Check 'OpenSSH server' 'OK' 'Service present but not running.'
+    }
+}
+Run-Check 'SMBv1 server' {
+    $cfg = Get-SmbServerConfiguration
+    if ($cfg.EnableSMB1Protocol) {
+        Add-Check 'SMBv1 server' 'REVIEW' 'Legacy SMBv1 server protocol enabled.'
+    } else {
+        Add-Check 'SMBv1 server' 'OK' 'Legacy SMBv1 server protocol disabled.'
+    }
+}
 Run-Check 'Sensitive TCP listeners' {
     $ports = @(Get-NetTCPConnection -State Listen |
         Where-Object { $_.LocalPort -in @(22, 135, 139, 445, 3389, 5985, 5986) } |
