@@ -55,3 +55,11 @@ This is an engineering **review checklist**, not a certification. Apply a contro
 
 ### Windows read-only first pass
 Run `scripts/windows-exposure-readonly.ps1` in a local Windows PowerShell session **after reviewing its source**. It reads settings and prints a local summary without modifying settings or uploading results. Do **not** paste its full output, personal account names or network identifiers into public GitHub issues. An `OK` result does not exclude malware, persistence, stolen sessions, router exposure or WSL/virtualization network paths.
+
+### Historical Git secret-signature guard
+
+`scripts/git_history_secret_guard.py` examines locally fetched Git blob objects (including historical objects present after full fetch) using a small set of token/key signatures. It has **no network calls**, does not modify files, and does not print matching values, paths or blob hashes. The CI workflow checks out with `fetch-depth: 0` and `persist-credentials: false`.
+
+The guard is an **early warning, not a comprehensive secrets audit**: it cannot detect every provider token, custom password, encoded credential, inaccessible ref, external Actions log/artifact, or blobs over 2 MiB. False positives are possible. A clean result does not establish the absence of leaked secrets. Run a maintained dedicated scanner (for example Gitleaks) in an approved private environment and examine historical releases, artifacts, forked repositories and account audit records separately.
+
+If the guard alerts, **do not post the raw value in PR comments or logs**. Identify the affected provider/credential using an authorized, private review, revoke/rotate it, check use logs and downstream effects, then coordinate careful history cleanup if appropriate. Rewriting Git history cannot revoke a copied secret.
