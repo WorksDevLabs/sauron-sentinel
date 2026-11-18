@@ -3,6 +3,7 @@
 This snapshot is advisory, not an intrusion detector or a clean-bill-of-health.
 Results are returned only to the requesting loopback dashboard connection.
 """
+
 from __future__ import annotations
 
 import base64
