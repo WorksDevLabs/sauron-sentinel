@@ -752,7 +752,11 @@ class DashboardHandler(BaseHTTPRequestHandler):
         test_route = path == "/api/notifications/test"
         exposure_route = path == "/api/system-exposure"
         if not (
-            path == "/api/scan" or review_match or read_match or preferences_route or test_route
+            path == "/api/scan"
+            or review_match
+            or read_match
+            or preferences_route
+            or test_route
             or exposure_route
         ):
             self._json_reply(404, {"error": "not_found"})
