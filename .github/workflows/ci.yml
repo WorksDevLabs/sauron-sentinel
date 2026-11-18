@@ -53,6 +53,17 @@ jobs:
             [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $path), [ref]$tokens, [ref]$parseErrors) | Out-Null
             if ($parseErrors.Count) { throw ($path + ': ' + ($parseErrors | Out-String)) }
           }
+      - name: Smoke test real Windows exposure collection
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          @'
+          from sauron_sentinel.windows_exposure import run_exposure_audit
+          result = run_exposure_audit()
+          assert result["status"] == "completed", "Windows exposure collection unavailable"
+          assert len(result["checks"]) >= 8, "Windows exposure output incomplete"
+          print("Read-only Windows exposure smoke PASS; host check details not logged")
+          '@ | python -
       - name: Validate Windows launcher syntax
         if: runner.os == 'Windows'
         shell: pwsh
