@@ -107,6 +107,7 @@ Run-Check 'Windows Update service' {
     else { Add-Check 'Windows Update service' 'OK' 'Service not disabled; install pending updates separately.' }
 }
 if ($env:SAURON_EXPOSURE_JSON -eq '1') {
+    [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
     # Local machine-readable mode for the opt-in Sentinel desktop security panel.
     # No network upload, disk write, elevation or security-setting changes.
     ConvertTo-Json -InputObject @($script:Results.ToArray()) -Depth 3 -Compress
