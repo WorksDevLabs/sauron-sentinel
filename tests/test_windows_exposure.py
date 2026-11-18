@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from importlib import resources
+from pathlib import Path
 
 import pytest
 
@@ -38,7 +39,7 @@ def test_parse_valid_audit_counts_without_security_claims():
         [{"Check": "Firewall", "Status": "SAFE", "Detail": "No issue"}],
         [{"Check": "Firewall", "Status": "OK", "Detail": 12}],
         [{"Check": "Firewall", "Status": "OK", "Detail": "x" * 501}],
-        [{"Check": "Firewall", "Status": "OK", "Detail": "" , "secret": "hidden"}],
+        [{"Check": "Firewall", "Status": "OK", "Detail": "", "secret": "hidden"}],
     ],
 )
 def test_reject_invalid_audit_schema(invalid):
@@ -95,7 +96,7 @@ def test_collector_failure_does_not_leak_private_exception(monkeypatch):
 
 
 def test_packaged_powershell_matches_reviewed_readonly_script():
-    root = __import__("pathlib").Path(__file__).resolve().parents[1]
+    root = Path(__file__).resolve().parents[1]
     script = (root / "scripts/windows-exposure-readonly.ps1").read_text(encoding="utf-8")
     packaged = (
         resources.files("sauron_sentinel")
