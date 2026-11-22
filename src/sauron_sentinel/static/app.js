@@ -657,7 +657,7 @@
 
   const exposureLabels = {
     "Firewall": "Güvenlik duvarı",
-    "Defender real-time protection": "Defender gerçek zamanlı koruma",
+    "Antivirus real-time protection": "Antivirüs gerçek zamanlı koruma",
     "Remote Desktop": "Uzak Masaüstü (RDP)",
     "Remote Assistance": "Uzaktan Yardım",
     "WinRM": "Windows Uzaktan Yönetim",
