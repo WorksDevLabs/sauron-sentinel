@@ -4,7 +4,7 @@ Version 0.4.0 is an early usability preview adding first-use health guidance, ru
 
 ## Run the portable ZIP
 
-1. Obtain the complete `Sauron-Sentinel-0.4.0-Windows-x64.zip` preview archive when available. Published assets and their actual verification status appear under [releases](https://github.com/sehmusadsoy-ui/sauron-sentinel/releases).
+1. Obtain the complete `Sauron-Sentinel-0.4.0-Windows-x64.zip` preview archive when available. Published assets and their actual verification status appear under [releases](https://github.com/WorksDevLabs/sauron-sentinel/releases).
 2. Extract the complete archive into a writable location.
 3. Open `SauronSentinel` and double-click `SauronSentinel.exe`.
 4. Close the window when finished. Its monitor and local HTTP server stop with the application.

@@ -13,11 +13,11 @@ VSVersionInfo(
   kids=[
     StringFileInfo([
       StringTable('040904B0', [
-        StringStruct('CompanyName', 'Sauron Lab'),
+        StringStruct('CompanyName', 'WorksDevLabs'),
         StringStruct('FileDescription', 'Sauron Sentinel Windows Security Monitor'),
         StringStruct('FileVersion', '0.4.0'),
         StringStruct('InternalName', 'SauronSentinel'),
-        StringStruct('LegalCopyright', 'Copyright 2026 Sauron Lab'),
+        StringStruct('LegalCopyright', 'Copyright 2026 WorksDevLabs'),
         StringStruct('OriginalFilename', 'SauronSentinel.exe'),
         StringStruct('ProductName', 'Sauron Sentinel'),
         StringStruct('ProductVersion', '0.4.0')

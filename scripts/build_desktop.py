@@ -23,7 +23,7 @@ from pathlib import Path
 from desktop_assets import write_icon
 
 APP_NAME = "SauronSentinel"
-PUBLIC_REPOSITORY_URL = "https://github.com/sehmusadsoy-ui/sauron-sentinel"
+PUBLIC_REPOSITORY_URL = "https://github.com/WorksDevLabs/sauron-sentinel"
 _FORBIDDEN_SUFFIXES = {
     ".db",
     ".sqlite",
@@ -124,9 +124,10 @@ def audit_bundle(bundle: Path, private_strings: tuple[str, ...] = ()) -> list[Pa
             if relative.as_posix() == "README-TR.txt":
                 # The intentionally public repository URL can share text with a
                 # machine name. Allow that exact reference, not the whole file.
-                payload = path.read_bytes().lower()
+                payload = path.read_bytes()
                 for encoding in ("utf-8", "utf-16-le"):
                     payload = payload.replace(PUBLIC_REPOSITORY_URL.encode(encoding), b"")
+                payload = payload.lower()
                 if any(needle in payload for needle in needles):
                     raise ValueError("Portable bundle contains a private builder identifier")
                 files.append(path)
@@ -241,7 +242,7 @@ def copy_notices(repository: Path, bundle: Path) -> None:
         "Bu paket gerçek günlük, kullanıcı verisi veya önceden doldurulmuş alarm içermez.\n"
         "RF Canvas, CSI Radar ve LabMate bağlantıları yalnızca planlanmıştır.\n"
         "Bu araç seçili Windows kayıtlarını inceler; tüm güvenlik olaylarını kapsamaz.\n\n"
-        "Kaynak kod: https://github.com/sehmusadsoy-ui/sauron-sentinel\n",
+        "Kaynak kod: https://github.com/WorksDevLabs/sauron-sentinel\n",
         encoding="utf-8",
     )
 

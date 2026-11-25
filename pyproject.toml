@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{name = "Sauron Lab"}]
+authors = [{name = "WorksDevLabs"}]
 keywords = ["security", "telemetry", "detection-engineering", "iot", "rf"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -44,9 +44,9 @@ sauron-sentinel = "sauron_sentinel.cli:main"
 sauron-sentinel-desktop = "sauron_sentinel.desktop:main"
 
 [project.urls]
-Homepage = "https://github.com/sehmusadsoy-ui/sauron-sentinel"
-Documentation = "https://github.com/sehmusadsoy-ui/sauron-sentinel/tree/main/docs"
-Issues = "https://github.com/sehmusadsoy-ui/sauron-sentinel/issues"
+Homepage = "https://github.com/WorksDevLabs/sauron-sentinel"
+Documentation = "https://github.com/WorksDevLabs/sauron-sentinel/tree/main/docs"
+Issues = "https://github.com/WorksDevLabs/sauron-sentinel/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
