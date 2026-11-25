@@ -23,7 +23,7 @@ from pathlib import Path
 from desktop_assets import write_icon
 
 APP_NAME = "SauronSentinel"
-PUBLIC_REPOSITORY_URL = "https://github.com/sehmusadsoy-ui/sauron-sentinel"
+PUBLIC_REPOSITORY_URL = "https://github.com/WorksDevLabs/sauron-sentinel"
 _FORBIDDEN_SUFFIXES = {
     ".db",
     ".sqlite",
@@ -241,7 +241,7 @@ def copy_notices(repository: Path, bundle: Path) -> None:
         "Bu paket gerçek günlük, kullanıcı verisi veya önceden doldurulmuş alarm içermez.\n"
         "RF Canvas, CSI Radar ve LabMate bağlantıları yalnızca planlanmıştır.\n"
         "Bu araç seçili Windows kayıtlarını inceler; tüm güvenlik olaylarını kapsamaz.\n\n"
-        "Kaynak kod: https://github.com/sehmusadsoy-ui/sauron-sentinel\n",
+        "Kaynak kod: https://github.com/WorksDevLabs/sauron-sentinel\n",
         encoding="utf-8",
     )
 

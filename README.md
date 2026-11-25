@@ -2,7 +2,7 @@
 
 **See local Windows security telemetry. Inspect the evidence behind every alert.**
 
-[![CI](https://github.com/sehmusadsoy-ui/sauron-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/sehmusadsoy-ui/sauron-sentinel/actions/workflows/ci.yml)
+[![CI](https://github.com/WorksDevLabs/sauron-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/WorksDevLabs/sauron-sentinel/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -16,7 +16,7 @@ RF Canvas, CSI Radar, and LabMate remain **future integration targets**. No Flip
 
 ## Portable Windows app
 
-1. Obtain the complete `Sauron-Sentinel-0.4.0-Windows-x64.zip` preview archive when available from [release assets](https://github.com/sehmusadsoy-ui/sauron-sentinel/releases).
+1. Obtain the complete `Sauron-Sentinel-0.4.0-Windows-x64.zip` preview archive when available from [release assets](https://github.com/WorksDevLabs/sauron-sentinel/releases).
 2. Extract the whole ZIP to a folder you can access.
 3. Open the extracted `SauronSentinel` folder and double-click **`SauronSentinel.exe`**.
 
@@ -93,7 +93,7 @@ This is an early heuristic monitoring tool, not a calibrated intrusion detector,
 ## Manual installation and commands
 
 ```sh
-git clone https://github.com/sehmusadsoy-ui/sauron-sentinel.git
+git clone https://github.com/WorksDevLabs/sauron-sentinel.git
 cd sauron-sentinel
 python -m venv .venv
 ```
@@ -210,4 +210,6 @@ CI is configured for Windows and Ubuntu with Python 3.11 and 3.14, branch covera
 
 Core monitoring and CLI code use the standard library. The optional desktop edition uses pywebview, Python/.NET interoperability, and Microsoft's installed WebView2 Runtime. Desktop build tools and top-level development dependencies are pinned in `pyproject.toml`; pip resolves transitive dependencies. The separate manual Windows packaging workflow builds a portable artifact without collecting live user data. Actions use full commit pins and read-only repository permissions. Dependabot proposes updates.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Released under the [MIT License](LICENSE). A Sauron Lab project.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Released under the [MIT License](LICENSE). A WorksDevLabs project.
+
+[WorksDevLab's](https://github.com/WorksDevLabs)

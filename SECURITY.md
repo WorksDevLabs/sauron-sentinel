@@ -4,7 +4,7 @@ Sauron Sentinel is an early local-analysis tool. Security fixes target the lates
 
 ## Reporting a vulnerability
 
-Use [GitHub private vulnerability reporting](https://github.com/sehmusadsoy-ui/sauron-sentinel/security/advisories/new) if it is enabled for this repository. If it is unavailable, open a minimal issue asking for a private reporting channel without including exploit details, real telemetry, personal information, or secrets.
+Use [GitHub private vulnerability reporting](https://github.com/WorksDevLabs/sauron-sentinel/security/advisories/new) if it is enabled for this repository. If it is unavailable, open a minimal issue asking for a private reporting channel without including exploit details, real telemetry, personal information, or secrets.
 
 Include the affected version, Python and operating-system versions, expected and actual behavior, and a minimal synthetic reproducer. Do not publish sensitive captures or run tests against systems without permission. No response-time guarantee or bug-bounty program is offered.
 
