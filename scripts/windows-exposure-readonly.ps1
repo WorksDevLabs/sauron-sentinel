@@ -25,16 +25,42 @@ function Run-Check {
 Run-Check 'Firewall' {
     $p = @(Get-NetFirewallProfile -PolicyStore ActiveStore)
     if ($p.Count -eq 0) { Add-Check 'Firewall' 'UNKNOWN' 'No profiles returned.' }
-    elseif (@($p | Where-Object { -not $_.Enabled }).Count -gt 0) {
-        Add-Check 'Firewall' 'REVIEW' 'One or more firewall profiles report disabled.'
-    } else { Add-Check 'Firewall' 'OK' 'All returned firewall profiles enabled.' }
+    else {
+        $off = @($p | Where-Object { -not $_.Enabled } | ForEach-Object { $_.Name })
+        # NotConfigured inherits the Windows default inbound action, which is Block.
+        $allow = @($p | Where-Object { $_.Enabled -and "$($_.DefaultInboundAction)" -eq 'Allow' } | ForEach-Object { $_.Name })
+        if ($off.Count -gt 0) {
+            Add-Check 'Firewall' 'REVIEW' ('Firewall profile disabled: ' + ($off -join ', ') + '.')
+        } elseif ($allow.Count -gt 0) {
+            Add-Check 'Firewall' 'REVIEW' ('Default inbound action is Allow on: ' + ($allow -join ', ') + '.')
+        } else {
+            Add-Check 'Firewall' 'OK' 'All profiles enabled; default inbound connections blocked.'
+        }
+    }
 }
-Run-Check 'Defender real-time protection' {
-    $d = Get-MpComputerStatus
-    if ($d.RealTimeProtectionEnabled -eq $true) {
-        Add-Check 'Defender real-time protection' 'OK' 'Enabled.'
+Run-Check 'Antivirus real-time protection' {
+    # Windows Security Center lists registered antivirus products (Defender or third
+    # party such as Kaspersky). Defender is passive/off by design when another AV is
+    # active, so that alone is not a finding. Product names only; no paths or IDs.
+    $products = @()
+    try {
+        $products = @(Get-CimInstance -Namespace 'root/SecurityCenter2' -ClassName AntiVirusProduct -ErrorAction Stop)
+    } catch { $products = @() }
+    $third = @($products | Where-Object { $_.displayName -notmatch 'Defender' })
+    # productState bits 12-15: 1 = real-time scanning on.
+    $thirdOn = @($third | Where-Object { (([int]$_.productState -shr 12) -band 0xF) -eq 1 } | ForEach-Object { $_.displayName } | Sort-Object -Unique)
+    $mp = $null
+    try { $mp = Get-MpComputerStatus -ErrorAction Stop } catch { $mp = $null }
+    if ($thirdOn.Count -gt 0) {
+        Add-Check 'Antivirus real-time protection' 'OK' ('Real-time protection on: ' + ($thirdOn -join ', ') + '. Microsoft Defender passive or off is expected.')
+    } elseif ($mp -and $mp.RealTimeProtectionEnabled -eq $true) {
+        Add-Check 'Antivirus real-time protection' 'OK' 'Microsoft Defender real-time protection enabled.'
+    } elseif ($third.Count -gt 0) {
+        Add-Check 'Antivirus real-time protection' 'REVIEW' ('Antivirus registered but real-time state not reported on: ' + (($third | ForEach-Object { $_.displayName }) -join ', ') + '.')
+    } elseif ($products.Count -eq 0 -and -not $mp) {
+        Add-Check 'Antivirus real-time protection' 'UNKNOWN' 'Security Center and Defender status unavailable.'
     } else {
-        Add-Check 'Defender real-time protection' 'REVIEW' 'Not enabled or a different antivirus may be managing protection.'
+        Add-Check 'Antivirus real-time protection' 'REVIEW' 'No antivirus reports real-time protection on.'
     }
 }
 Run-Check 'Remote Desktop' {
@@ -94,7 +120,20 @@ Run-Check 'Sensitive TCP listeners' {
         Where-Object { $_.LocalPort -in @(22, 135, 139, 445, 3389, 5985, 5986) } |
         Select-Object -ExpandProperty LocalPort -Unique | Sort-Object)
     if ($ports.Count -eq 0) { Add-Check 'Sensitive TCP listeners' 'OK' 'No selected listeners found at this instant.' }
-    else { Add-Check 'Sensitive TCP listeners' 'REVIEW' ('Review local ports: ' + ($ports -join ', ') + '. A listener does not prove Internet exposure.') }
+    else {
+        # A local listener is not Internet exposure: reachability also depends on the
+        # firewall profile, inbound rules and the upstream network (NAT/router).
+        $blocked = $false
+        try {
+            $prof = @(Get-NetFirewallProfile -PolicyStore ActiveStore)
+            $blocked = $prof.Count -gt 0 -and @($prof | Where-Object { -not $_.Enabled -or "$($_.DefaultInboundAction)" -eq 'Allow' }).Count -eq 0
+        } catch { $blocked = $false }
+        if ($blocked) {
+            Add-Check 'Sensitive TCP listeners' 'OK' ('Local listeners: ' + ($ports -join ', ') + '. Firewall blocks inbound by default; review only rules you added.')
+        } else {
+            Add-Check 'Sensitive TCP listeners' 'REVIEW' ('Review local ports: ' + ($ports -join ', ') + '. A listener does not prove Internet exposure.')
+        }
+    }
 }
 Run-Check 'System drive encryption' {
     $vol = Get-BitLockerVolume -MountPoint $env:SystemDrive
