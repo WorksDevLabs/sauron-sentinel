@@ -18,6 +18,7 @@ Results are shown locally for the current window session only; this panel does n
 - A fixed, packaged PowerShell script contains all checks. No browser-supplied argument is interpolated into executable code. It runs with `-NoProfile`, `-NonInteractive` and a 20-second timeout, with stderr suppressed.
 - The response is validated and size-bounded before it reaches the dashboard. Errors are generic and avoid full Windows paths, usernames or account secrets.
 - The interface inserts diagnostic strings using DOM `textContent` rather than `innerHTML`.
+- Interpretation: an active third-party antivirus makes a passive Microsoft Defender expected (not a finding); firewall profile state and the default inbound action are separate checks; a listening port is never reported as Internet exposure by itself; BitLocker status that a standard user cannot read is `UNKNOWN`, not "off".
 - The packaged script was derived from `scripts/windows-exposure-readonly.ps1`. CI checks its syntax and a source parity test checks that the underlying read-only checks stay aligned.
 
 ## Manual acceptance requirements (not automated in CI)

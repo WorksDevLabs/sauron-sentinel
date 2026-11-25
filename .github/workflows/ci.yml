@@ -62,6 +62,8 @@ jobs:
           result = run_exposure_audit()
           assert result["status"] == "completed", "Windows exposure collection unavailable"
           assert len(result["checks"]) >= 8, "Windows exposure output incomplete"
+          names = {check["name"] for check in result["checks"]}
+          assert {"Firewall profiles", "Firewall default inbound"} <= names, "Firewall checks missing"
           print("Read-only Windows exposure smoke PASS; host check details not logged")
           '@ | python -
       - name: Validate Windows launcher syntax

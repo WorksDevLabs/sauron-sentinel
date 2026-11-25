@@ -72,7 +72,7 @@ jobs:
               -not [object]::Equals($report.collected_windows_events, $false)) {
             throw 'Marked executable diagnostics did not report a successful frozen runtime without event collection'
           }
-          foreach ($check in 'resources', 'rules', 'desktop_libraries', 'instance_lock', 'loopback_http', 'sqlite', 'shutdown') {
+          foreach ($check in 'resources', 'rules', 'desktop_libraries', 'bundled_resources', 'instance_lock', 'loopback_http', 'sqlite', 'shutdown') {
             if (-not [object]::Equals($report.checks[$check], $true)) {
               throw "Marked executable failed the $check diagnostic check"
             }

@@ -656,7 +656,8 @@
 
 
   const exposureLabels = {
-    "Firewall": "Güvenlik duvarı",
+    "Firewall profiles": "Güvenlik duvarı profilleri",
+    "Firewall default inbound": "Gelen bağlantı varsayılanı",
     "Antivirus real-time protection": "Antivirüs gerçek zamanlı koruma",
     "Remote Desktop": "Uzak Masaüstü (RDP)",
     "Remote Assistance": "Uzaktan Yardım",

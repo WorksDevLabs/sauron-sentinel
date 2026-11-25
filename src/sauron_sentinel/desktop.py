@@ -498,6 +498,26 @@ def _verify_desktop_libraries() -> None:
         raise RuntimeError("Desktop renderer library unavailable")
 
 
+def _bundled_resource_root(package, bundle_root) -> bool:
+    """Frozen builds must read resources from their own bundle, never a checkout."""
+    if not bundle_root:
+        return False
+    try:
+        bundle = Path(bundle_root).resolve()
+        for name in ("windows_exposure.ps1", "windows_collector.ps1", "static/app.js"):
+            resource = package.joinpath(*name.split("/"))
+            if isinstance(resource, os.PathLike) and not (
+                Path(resource).resolve().is_relative_to(bundle)
+            ):
+                return False
+            bundled = bundle / "sauron_sentinel" / name
+            if not bundled.is_file() or bundled.read_bytes() != resource.read_bytes():
+                return False
+    except (TypeError, OSError):
+        return False
+    return True
+
+
 def _diagnose(output: Path) -> int:
     """Check a frozen bundle without a GUI or access to existing user telemetry."""
     report: dict[str, Any] = {
@@ -510,7 +530,12 @@ def _diagnose(output: Path) -> int:
     }
     try:
         package = resources.files("sauron_sentinel")
-        for name in ("defaults.toml", "demo.jsonl", "windows_collector.ps1"):
+        for name in (
+            "defaults.toml",
+            "demo.jsonl",
+            "windows_collector.ps1",
+            "windows_exposure.ps1",
+        ):
             if not package.joinpath(name).read_bytes():
                 raise RuntimeError("Missing package resource")
         for name in ("index.html", "app.js", "styles.css"):
@@ -528,6 +553,10 @@ def _diagnose(output: Path) -> int:
                     report["error"] = _PYTHONNET_DOWNLOAD_BLOCKED
                 raise
             report["checks"]["desktop_libraries"] = True
+        if getattr(sys, "frozen", False):
+            if not _bundled_resource_root(package, getattr(sys, "_MEIPASS", None)):
+                raise RuntimeError("Package resources resolved outside the bundle")
+            report["checks"]["bundled_resources"] = True
         with tempfile.TemporaryDirectory(prefix="sauron-desktop-diagnose-") as directory:
             data_dir = Path(directory)
             lock = InstanceLock(data_dir)

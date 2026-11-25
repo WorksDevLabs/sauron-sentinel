@@ -415,6 +415,65 @@ def test_headless_diagnosis_checks_bundle_without_gui_or_real_collector(tmp_path
     assert "data_dir" not in report and "events" not in report
 
 
+def _frozen_bundle(tmp_path, monkeypatch, *, omit=()):
+    """A fake PyInstaller extraction directory holding copies of package resources."""
+    from importlib import resources
+
+    bundle = tmp_path / "bundle"
+    source = resources.files("sauron_sentinel")
+    for name in ("windows_exposure.ps1", "windows_collector.ps1", "static/app.js"):
+        if name in omit:
+            continue
+        target = bundle / "sauron_sentinel" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.joinpath(*name.split("/")).read_bytes())
+    monkeypatch.setattr(desktop.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(desktop.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(desktop.sys, "_MEIPASS", str(bundle), raising=False)
+    monkeypatch.setattr(desktop, "_verify_desktop_libraries", lambda: None)
+    # Resources served from the bundle, as PyInstaller's frozen importer does.
+    monkeypatch.setattr(desktop.resources, "files", lambda name: bundle / name)
+    return bundle
+
+
+def test_frozen_diagnosis_requires_resources_from_the_bundle(tmp_path, monkeypatch):
+    from importlib import resources
+
+    real = resources.files("sauron_sentinel")
+    bundle = _frozen_bundle(tmp_path, monkeypatch)
+    for name in ("defaults.toml", "demo.jsonl", "static/index.html", "static/styles.css"):
+        target = bundle / "sauron_sentinel" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(real.joinpath(*name.split("/")).read_bytes())
+    report_path = tmp_path / "report.json"
+    assert desktop.main(["--diagnose", str(report_path)]) == 0
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["frozen"] is True
+    assert report["checks"]["bundled_resources"] is True
+    assert report["checks"]["desktop_libraries"] is True
+
+
+def test_frozen_diagnosis_rejects_resources_read_from_a_checkout(tmp_path, monkeypatch):
+    _frozen_bundle(tmp_path, monkeypatch, omit=("windows_exposure.ps1",))
+    # Simulate an importer that still resolves the source checkout.
+    monkeypatch.setattr(desktop.resources, "files", _source_files)
+    report_path = tmp_path / "report.json"
+    assert desktop.main(["--diagnose", str(report_path)]) == 1
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "failed"
+    assert "bundled_resources" not in report["checks"]
+
+
+def _source_files(name):
+    import importlib.resources
+
+    return importlib.resources.files(name)
+
+
+def test_bundled_resource_root_rejects_missing_bundle():
+    assert desktop._bundled_resource_root(Path("."), None) is False
+
+
 def test_diagnosis_failure_is_generic_report(tmp_path, monkeypatch):
     def missing(name):
         raise OSError("private installation path")

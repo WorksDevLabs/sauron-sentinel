@@ -22,19 +22,32 @@ function Run-Check {
     param([string]$Name, [scriptblock]$Action)
     try { & $Action } catch { Add-Check $Name 'UNKNOWN' 'Could not read with current permissions or available modules.' }
 }
-Run-Check 'Firewall' {
+Run-Check 'Firewall profiles' {
     $p = @(Get-NetFirewallProfile -PolicyStore ActiveStore)
-    if ($p.Count -eq 0) { Add-Check 'Firewall' 'UNKNOWN' 'No profiles returned.' }
+    if ($p.Count -eq 0) { Add-Check 'Firewall profiles' 'UNKNOWN' 'No profiles returned.' }
     else {
         $off = @($p | Where-Object { -not $_.Enabled } | ForEach-Object { $_.Name })
-        # NotConfigured inherits the Windows default inbound action, which is Block.
-        $allow = @($p | Where-Object { $_.Enabled -and "$($_.DefaultInboundAction)" -eq 'Allow' } | ForEach-Object { $_.Name })
         if ($off.Count -gt 0) {
-            Add-Check 'Firewall' 'REVIEW' ('Firewall profile disabled: ' + ($off -join ', ') + '.')
-        } elseif ($allow.Count -gt 0) {
-            Add-Check 'Firewall' 'REVIEW' ('Default inbound action is Allow on: ' + ($allow -join ', ') + '.')
+            Add-Check 'Firewall profiles' 'REVIEW' ('Firewall profile disabled: ' + ($off -join ', ') + '.')
         } else {
-            Add-Check 'Firewall' 'OK' 'All profiles enabled; default inbound connections blocked.'
+            Add-Check 'Firewall profiles' 'OK' ('All profiles enabled: ' + (($p | ForEach-Object { $_.Name }) -join ', ') + '.')
+        }
+    }
+}
+Run-Check 'Firewall default inbound' {
+    # Evaluated separately from profile state. NotConfigured inherits the Windows
+    # default inbound action, which is Block.
+    $p = @(Get-NetFirewallProfile -PolicyStore ActiveStore)
+    $enabled = @($p | Where-Object { $_.Enabled })
+    if ($p.Count -eq 0) { Add-Check 'Firewall default inbound' 'UNKNOWN' 'No profiles returned.' }
+    elseif ($enabled.Count -eq 0) {
+        Add-Check 'Firewall default inbound' 'REVIEW' 'No enabled profile enforces a default inbound action.'
+    } else {
+        $allow = @($enabled | Where-Object { "$($_.DefaultInboundAction)" -eq 'Allow' } | ForEach-Object { $_.Name })
+        if ($allow.Count -gt 0) {
+            Add-Check 'Firewall default inbound' 'REVIEW' ('Default inbound action is Allow on: ' + ($allow -join ', ') + '.')
+        } else {
+            Add-Check 'Firewall default inbound' 'OK' ('Unsolicited inbound connections blocked by default on: ' + (($enabled | ForEach-Object { $_.Name }) -join ', ') + '.')
         }
     }
 }
@@ -136,9 +149,14 @@ Run-Check 'Sensitive TCP listeners' {
     }
 }
 Run-Check 'System drive encryption' {
-    $vol = Get-BitLockerVolume -MountPoint $env:SystemDrive
-    if ($vol.ProtectionStatus -eq 'On') { Add-Check 'System drive encryption' 'OK' 'BitLocker reports protection on.' }
-    else { Add-Check 'System drive encryption' 'REVIEW' 'BitLocker protection not reported on; check device encryption alternatives.' }
+    # Standard users usually cannot query BitLocker; that is reported as UNKNOWN,
+    # never as "off". No elevation is requested.
+    $vol = $null
+    try { $vol = Get-BitLockerVolume -MountPoint $env:SystemDrive -ErrorAction Stop } catch { $vol = $null }
+    $state = if ($vol) { "$($vol.ProtectionStatus)" } else { '' }
+    if ($state -eq 'On') { Add-Check 'System drive encryption' 'OK' 'BitLocker reports protection on.' }
+    elseif ($state -eq 'Off') { Add-Check 'System drive encryption' 'REVIEW' 'BitLocker reports protection off; check device encryption alternatives.' }
+    else { Add-Check 'System drive encryption' 'UNKNOWN' 'BitLocker status is not readable with standard user rights; it is not treated as off.' }
 }
 Run-Check 'Windows Update service' {
     $svc = Get-Service -Name 'wuauserv'
